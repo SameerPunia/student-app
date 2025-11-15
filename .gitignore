@@ -1,39 +1,48 @@
+# Node modules
 node_modules/
 
-.git/
+# Expo & Metro
 .expo/
+.expo-shared/
+.metro-health-check*
 
+# Builds
 dist/
 web-build/
 expo-env.d.ts
+android/
+ios/
 
+# Git
+.git/
+
+# Certificates / Keys
 *.orig.*
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
+*.pem
 
-.metro-health-check*
+# Mac / Windows system files
+.DS_Store
 
+# Debug logs
 npm-debug.*
 yarn-debug.*
 yarn-error.*
 
-.DS_Store
-*.pem
-
+# Environment files
+.env
 .env*.local
 
+# TypeScript build info
 *.tsbuildinfo
 
+# Editor-specific
 .natively/
 
-android/
-ios/
-
+# Netlify files (not needed)
 netlify.toml
 .netlify/
-
-pnpm-lock.yaml
-
