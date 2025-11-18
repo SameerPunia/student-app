@@ -58,6 +58,9 @@ export default function CalendarView() {
   const [showEditEvent, setShowEditEvent] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [showYearPicker, setShowYearPicker] = useState(false);
+  const [showDeleteMenu, setShowDeleteMenu] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+
 
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -273,29 +276,24 @@ export default function CalendarView() {
     }
   };
 
-  const deleteEvent = async (event: CalendarEvent) => {
-    Alert.alert('Delete Event', 'Are you sure you want to delete this event? This action cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            const { error } = await supabase.from('events').delete().eq('id', event.id);
+  const deleteEvent = async (eventId: string) => {
+  try {
+    const { error } = await supabase
+      .from('events')
+      .delete()
+      .eq('id', eventId);
 
-            if (error) throw error;
+    if (error) throw error;
 
-            setEvents((prev) => prev.filter((e) => e.id !== event.id));
-            fetchEvents();
-            showToast('Event deleted successfully', 'success');
-          } catch (error) {
-            console.error('Error deleting event:', error);
-            showToast('Failed to delete event', 'error');
-          }
-        },
-      },
-    ]);
-  };
+    setEvents((prev) => prev.filter((e) => e.id !== eventId));
+    fetchEvents();
+    showToast('Event deleted successfully', 'success');
+  } catch (error) {
+    console.error('Error deleting event:', error);
+    showToast('Failed to delete event', 'error');
+  }
+};
+
 
   // ===================== CRUD: TASKS =====================
 
@@ -492,9 +490,18 @@ export default function CalendarView() {
     const now = new Date();
 
     const upcomingEvents = events
-      .filter((event) => event.start_time && new Date(event.start_time) > now)
-      .slice(0, 10);
+  .filter((event) => {
+    if (!event.start_time) return false;
 
+    const eventDate = new Date(event.start_time);
+
+    // show if (A) today OR (B) future
+    return (
+      isSameDate(eventDate, now) ||
+      eventDate > now
+    );
+  })
+  .sort((a, b) => new Date(a.start_time!).getTime() - new Date(b.start_time!).getTime());
     const upcomingTasks = tasks
       .filter((task) => task.due_date && new Date(task.due_date) > now && !task.is_completed)
       .slice(0, 10)
@@ -722,15 +729,14 @@ export default function CalendarView() {
 
                             {/* DELETE EVENT */}
                             <TouchableOpacity
-                              onPress={() => deleteEvent(item as CalendarEvent)}
-                              style={{
-                                padding: spacing.sm,
-                                borderRadius: borderRadius.md,
-                                backgroundColor: colors.surface,
-                              }}
-                            >
-                              <Icon name="trash" size={16} color={colors.error} />
-                            </TouchableOpacity>
+  onPress={() => {
+    setSelectedEventId(item.id);
+    setShowDeleteMenu(true);
+  }}
+>
+  <Icon name="trash" size={16} color={colors.error} />
+</TouchableOpacity>
+
                           </>
                         )}
                       </View>
@@ -1422,6 +1428,65 @@ export default function CalendarView() {
           </ScrollView>
         </SafeAreaView>
       </Modal>
+      <Modal
+  visible={showDeleteMenu}
+  transparent
+  animationType="fade"
+>
+  <View
+    style={{
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}
+  >
+    <View
+      style={{
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 10,
+        width: '80%'
+      }}
+    >
+      <Text
+        style={{ fontSize: 18, marginBottom: 20, textAlign: 'center' }}
+      >
+        Are you sure you want to delete this event?
+      </Text>
+
+      <TouchableOpacity
+        style={{
+          padding: 12,
+          backgroundColor: 'red',
+          borderRadius: 8,
+          marginBottom: 10
+        }}
+        onPress={async () => {
+          if (selectedEventId) {
+            await deleteEvent(selectedEventId);
+          }
+          setShowDeleteMenu(false);
+        }}
+      >
+        <Text style={{ color: 'white', textAlign: 'center' }}>Delete</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={{
+          padding: 12,
+          backgroundColor: '#ccc',
+          borderRadius: 8
+        }}
+        onPress={() => setShowDeleteMenu(false)}
+      >
+        <Text style={{ textAlign: 'center' }}>Cancel</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
     </SafeAreaView>
   );
 }
+
