@@ -11,9 +11,16 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
+    storage: typeof window !== "undefined" ? window.localStorage : undefined,
   },
 });
-
+  export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: AsyncStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+});
 export type Database = {
   public: {
     Tables: {
