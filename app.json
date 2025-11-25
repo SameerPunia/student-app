@@ -28,6 +28,9 @@
     "web": {
       "favicon": "./assets/images/natively-dark.png",
       "bundler": "metro",
+      "build": {
+        "serviceWorker": null
+      }
     },
     "plugins": [
       "expo-router",
@@ -50,3 +53,4 @@
     "owner": "student-buddy"
   }
 }
+
