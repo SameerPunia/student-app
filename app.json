@@ -29,6 +29,12 @@
       "favicon": "./assets/images/natively-dark.png",
       "bundler": "metro"
     },
+    "web": {
+  "build": {
+    "serviceWorker": null
+      }
+    }
+
     "plugins": [
       "expo-router",
       [
